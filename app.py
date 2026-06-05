@@ -197,11 +197,14 @@ def api_quant_sample():
     """返回量化分析示例数据（Apple 股价）"""
     try:
         price_df = pd.read_excel(PRICE_FILENAME, sheet_name=PRICE_SHEETNAME)
+        # 确保按日期升序排列
+        price_df = price_df.sort_values("Date")
         price_df = price_df.set_index("Date").astype("float64")
         # 取 AAPL（第一支股票，索引为 3）
         aapl_col = price_df.columns[3]
         aapl_prices = price_df[aapl_col].values
-        dates = price_df.index.tolist()
+        # 转换为 YYYY-MM-DD 字符串列表，便于 JSON 传输与前端显示
+        dates = [d.strftime("%Y-%m-%d") for d in price_df.index]
 
         return jsonify({
             "ok": True,
@@ -221,6 +224,7 @@ def api_quant_analyze():
     try:
         payload = request.get_json(force=True)
         prices = payload.get("prices")
+        dates = payload.get("dates")
         if not prices or len(prices) < 20:
             return jsonify({"ok": False, "error": "价格数据不足（至少需要 20 条）。"}), 400
 
@@ -230,6 +234,7 @@ def api_quant_analyze():
 
         result = run_quant_analysis(
             prices=np.array(prices, dtype=float),
+            dates=dates,
             arima_order=arima_order,
             markov_states=markov_states,
             forecast_steps=forecast_steps,

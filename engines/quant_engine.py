@@ -275,6 +275,7 @@ class ARIMAForecaster:
 
 def run_quant_analysis(
     prices,
+    dates=None,
     arima_order=(2, 1, 2),
     markov_states=3,
     forecast_steps=12,
@@ -284,6 +285,7 @@ def run_quant_analysis(
 
     Args:
         prices: 1D ndarray，价格序列
+        dates: list[str]，对应的日期序列
         arima_order: ARIMA (p, d, q) 阶数
         markov_states: HMM 状态数
         forecast_steps: 预测期数
@@ -292,6 +294,7 @@ def run_quant_analysis(
     Returns:
         dict:
             prices: list[float]               — 原始价格
+            dates: list[str]                  — 对应日期序列
             log_returns: list[float]          — 对数收益率
             regimes: list[str]                — 每期状态标签
             transition_matrix: list[list[float]] — 转移矩阵
@@ -300,11 +303,26 @@ def run_quant_analysis(
             forecast: dict                    — 预测结果
             metrics: dict                     — 汇总指标
     """
+    import pandas as pd
+
     prices = np.array(prices, dtype=float)
     if prices.ndim != 1:
         raise QuantAnalysisError("价格序列必须是 1 维数组。")
     if len(prices) < 50:
         raise QuantAnalysisError("数据太少（至少需要 50 期），建议提供更长时间的价格数据。")
+
+    # 如果提供了日期序列，且长度与价格一致，则强制按照时间升序重新排列
+    if dates is not None and len(dates) == len(prices):
+        try:
+            dt_series = pd.to_datetime(dates)
+            sort_idx = np.argsort(dt_series)
+            prices = prices[sort_idx]
+            dates = [dt_series[idx].strftime("%Y-%m-%d") for idx in sort_idx]
+        except Exception:
+            pass
+    else:
+        # 如果未提供，使用默认索引作为日期
+        dates = [str(i) for i in range(len(prices))]
 
     # 计算对数收益率
     log_returns = np.diff(np.log(prices))
@@ -339,6 +357,26 @@ def run_quant_analysis(
     forecaster.fit(prices)
     forecast_result = forecaster.forecast(steps=forecast_steps)
 
+    # 预测未来的日期
+    forecast_dates = []
+    try:
+        dt_list = pd.to_datetime(dates)
+        # 计算最频繁的日期间隔天数
+        days_diffs = [(dt_list[i+1] - dt_list[i]).days for i in range(len(dt_list)-1)]
+        from collections import Counter
+        most_common_diff = Counter(days_diffs).most_common(1)[0][0]
+        if most_common_diff <= 0:
+            most_common_diff = 1
+        
+        last_date = dt_list[-1]
+        for i in range(1, forecast_steps + 1):
+            next_date = last_date + pd.Timedelta(days=i * most_common_diff)
+            forecast_dates.append(next_date.strftime("%Y-%m-%d"))
+    except Exception:
+        forecast_dates = [f"t+{i}" for i in range(1, forecast_steps + 1)]
+    
+    forecast_result["dates"] = forecast_dates
+
     # ── 3. 汇总指标 ──
     total_return = float(prices[-1] / prices[0] - 1) if prices[0] > 0 else 0
     ann_return = total_return * (52 / len(prices)) if len(prices) > 0 else 0
@@ -347,6 +385,7 @@ def run_quant_analysis(
 
     return {
         "prices": prices.tolist(),
+        "dates": dates,
         "log_returns": log_returns.tolist(),
         "regimes": regimes,
         "state_labels": state_labels_ordered,

@@ -44,18 +44,30 @@
         var text = e.target.result;
         var lines = text.trim().split(/\n+/);
         if (lines.length < 2) throw new Error("数据太少");
-        var dates = [], prices = [];
+        var rawData = [];
         for (var i = 1; i < lines.length; i++) {
           var cols = lines[i].split(/[,，\t]+/);
           if (cols.length >= 2) {
-            dates.push(cols[0].trim());
-            prices.push(parseFloat(cols[1]));
+            var dStr = cols[0].trim();
+            var pVal = parseFloat(cols[1]);
+            if (dStr && !isNaN(pVal)) {
+              rawData.push({ date: dStr, price: pVal });
+            }
           }
         }
-        if (prices.length < 20) throw new Error("至少需要 20 条数据");
+        if (rawData.length < 20) throw new Error("至少需要 20 条有效数据");
+
+        // 强制按时间升序排列（解决时间序列逆序问题）
+        rawData.sort(function (a, b) {
+          return new Date(a.date) - new Date(b.date);
+        });
+
+        var dates = rawData.map(function (item) { return item.date; });
+        var prices = rawData.map(function (item) { return item.price; });
+
         state.quantData = { dates: dates, prices: prices };
         showPreview(dates, prices);
-        showToast("已加载 " + prices.length + " 条数据", "success");
+        showToast("已成功加载并按日期升序排列 " + prices.length + " 条数据", "success");
       } catch (err) {
         showToast("文件解析失败：" + err.message, "error");
       }
@@ -110,6 +122,7 @@
     try {
       var payload = {
         prices: state.quantData.prices,
+        dates: state.quantData.dates,
         arima_order: [
           Number(document.getElementById("inputP").value) || 2,
           Number(document.getElementById("inputD").value) || 1,
@@ -174,8 +187,7 @@
 
     var prices = data.prices;
     var regimes = data.regimes;   // 长度 = prices.length - 1
-    var xData = [];
-    for (var i = 0; i < prices.length; i++) { xData.push(i); }
+    var xData = data.dates || [];
 
     // 构建 markArea：regime[i] 表示从 price[i] 到 price[i+1] 之间的市场状态
     // markArea 的 xAxis 坐标：区间 [areaStart, i] 对应 regimes[areaStart..i-1]
@@ -200,8 +212,8 @@
 
     var option = {
       tooltip: { trigger: "axis" },
-      grid: { left: 60, right: 20, top: 20, bottom: 40 },
-      xAxis: { type: "category", data: xData, name: "期数", axisLabel: { show: false } },
+      grid: { left: 60, right: 20, top: 20, bottom: 50 },
+      xAxis: { type: "category", data: xData, name: "日期", axisLabel: { show: true } },
       yAxis: { type: "value", name: "价格", scale: true },
       textStyle: { fontFamily: "PingFang SC, Microsoft YaHei, sans-serif" },
       series: [{
@@ -280,16 +292,14 @@
     var prices = data.prices;
     var fc = data.forecast;
     var nHist = prices.length;
-    var histX = [];
-    for (var i = 0; i < nHist; i++) { histX.push(i); }
-    var fcX = [];
-    for (var j = 0; j < fc.forecast.length; j++) { fcX.push(nHist + j); }
+    var histX = data.dates || [];
+    var fcX = fc.dates || [];
 
     var option = {
       tooltip: { trigger: "axis" },
       legend: { data: ["历史价格", "预测", "置信上界", "置信下界"], bottom: 0 },
       grid: { left: 60, right: 20, top: 20, bottom: 50 },
-      xAxis: { type: "category", data: histX.concat(fcX), axisLabel: { show: false } },
+      xAxis: { type: "category", data: histX.concat(fcX), name: "日期", axisLabel: { show: true } },
       yAxis: { type: "value", name: "价格", scale: true },
       textStyle: { fontFamily: "PingFang SC, Microsoft YaHei, sans-serif" },
       series: [
