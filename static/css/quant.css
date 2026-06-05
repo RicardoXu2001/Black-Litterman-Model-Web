@@ -1,0 +1,56 @@
+/* ═════════════════════════════════════════════════════════════════════
+   量化分析页样式
+   ═════════════════════════════════════════════════════════════════════ */
+
+/* ── 文件上传区 ── */
+.upload-zone {
+  border: 2px dashed #ddd;
+  border-radius: var(--r);
+  padding: 36px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all .25s;
+  background: var(--c-bg);
+  margin-bottom: 16px;
+}
+.upload-zone:hover, .upload-zone.drag-over {
+  border-color: var(--c-red);
+  background: var(--c-red-bg);
+}
+.upload-icon {
+  font-size: 36px;
+  margin-bottom: 10px;
+}
+.upload-text {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.upload-hint {
+  font-size: 13px;
+  color: var(--c-tip);
+}
+
+/* ── 数据预览 ── */
+.data-preview {
+  margin-top: 16px;
+}
+.data-preview h4 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+/* ── 图表容器覆盖 ── */
+.chart-container {
+  width: 100%;
+  min-height: 400px;
+  margin-bottom: 22px;
+  border-radius: var(--r);
+  overflow: hidden;
+}
+
+/* ── 响应式 ── */
+@media (max-width: 640px) {
+  .chart-container { min-height: 300px; }
+}

@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}智投 — 智能投资分析平台{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="/static/css/homepage.css">{% endblock %}
+
+{% block content %}
+
+<!-- Hero 区域 -->
+<section class="hero">
+  <div class="hero-content">
+    <h1 class="hero-title">让数据为你的投资导航</h1>
+    <p class="hero-sub">不靠感觉，不凭运气。用科学的模型理解市场，做出更明智的投资决策。</p>
+  </div>
+  <div class="hero-bg"></div>
+</section>
+
+<!-- 功能卡片 -->
+<section class="feature-grid">
+  <!-- 量化分析卡片 -->
+  <a href="/quant" class="feature-card">
+    <div class="feature-icon">📈</div>
+    <h2 class="feature-name">量化分析</h2>
+    <p class="feature-desc">
+      Markov 链 + ARIMA 时间序列模型<br>
+      智能识别市场牛熊状态，预测股价走势
+    </p>
+    <ul class="feature-points">
+      <li>自动识别牛市 / 熊市 / 震荡状态</li>
+      <li>分析市场状态切换规律</li>
+      <li>预测未来价格趋势与置信区间</li>
+    </ul>
+    <span class="feature-cta">开始分析 →</span>
+  </a>
+
+  <!-- 投资组合卡片 -->
+  <a href="/portfolio" class="feature-card">
+    <div class="feature-icon">📊</div>
+    <h2 class="feature-name">投资组合</h2>
+    <p class="feature-desc">
+      Black-Litterman 模型<br>
+      融合市场共识与个人判断，生成最优仓位方案
+    </p>
+    <ul class="feature-points">
+      <li>输入你的投资标的和看法</li>
+      <li>模型自动平衡市场共识与主观判断</li>
+      <li>输出每只股票的建议仓位比例</li>
+      <li>支持滚动回测验证策略效果</li>
+    </ul>
+    <span class="feature-cta">开始配置 →</span>
+  </a>
+</section>
+
+<!-- 流程说明 -->
+<section class="how-it-works">
+  <h2>三步开始</h2>
+  <div class="steps">
+    <div class="step-item">
+      <div class="step-icon">1</div>
+      <h3>输入数据</h3>
+      <p>上传你的股票价格数据，或使用我们提供的示例数据快速体验</p>
+    </div>
+    <div class="step-item">
+      <div class="step-icon">2</div>
+      <h3>配置参数</h3>
+      <p>根据你的风险偏好调整参数——也可以直接用默认值</p>
+    </div>
+    <div class="step-item">
+      <div class="step-icon">3</div>
+      <h3>查看结果</h3>
+      <p>获得清晰直观的分析图表和配置建议，做出明智的决策</p>
+    </div>
+  </div>
+</section>
+
+{% endblock %}
+
+{% block scripts %}<script src="/static/js/homepage.js"></script>{% endblock %}

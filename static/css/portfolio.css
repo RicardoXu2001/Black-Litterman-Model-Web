@@ -1,0 +1,150 @@
+/* ═════════════════════════════════════════════════════════════════════
+   投资组合页 —— 基于原 style.css 扩展
+   ═════════════════════════════════════════════════════════════════════ */
+
+/* ── 页面标题 ── */
+.page-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+.page-header h1 {
+  font-size: 28px;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+.page-desc {
+  font-size: 15px;
+  color: var(--c-sub);
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+/* ── 模式切换 Tab ── */
+.mode-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 20px;
+  background: var(--c-card);
+  border-radius: var(--r);
+  padding: 4px;
+  box-shadow: var(--shadow);
+  max-width: 320px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.mode-tab {
+  flex: 1;
+  height: 38px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--c-sub);
+  cursor: pointer;
+  transition: all .25s;
+}
+.mode-tab.active {
+  background: var(--c-red);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(232,69,60,.25);
+}
+
+/* ── 预设标签 ── */
+.preset-row {
+  display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;
+}
+
+/* ── 看法卡片 ── */
+.views { display: grid; gap: 10px; margin-bottom: 10px; }
+
+.view-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr auto;
+  gap: 10px; align-items: end;
+  padding: 14px;
+  background: var(--c-bg);
+  border: 1px solid var(--c-line);
+  border-radius: var(--r);
+}
+.pct-wrap {
+  display: flex; align-items: center; gap: 4px;
+  font-size: 13px; color: var(--c-sub);
+}
+.pct-wrap input { flex: 1; }
+.view-row .fld { margin-bottom: 0; }
+
+.btn-remove {
+  width: 28px; height: 28px; border-radius: 50%;
+  border: none; background: transparent;
+  color: #ccc; font-size: 18px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 2px;
+}
+.btn-remove:hover { background: #fef0ef; color: var(--c-red); }
+
+.btn-add-view {
+  width: 100%; height: 40px;
+  border: 1.5px dashed #ddd;
+  border-radius: var(--r);
+  background: transparent;
+  font-family: var(--font); font-size: 14px;
+  color: var(--c-sub); cursor: pointer;
+  transition: all .18s;
+}
+.btn-add-view:hover { border-color: var(--c-red); color: var(--c-red); background: var(--c-red-bg); }
+
+/* ── 计算按钮 ── */
+.action-bar { text-align: center; margin-bottom: 20px; }
+
+/* ── 结果卡片 ── */
+.result-card { animation: slideUp .45s cubic-bezier(.22,.61,.36,1) both; }
+@keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+.result-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 18px; flex-wrap: wrap; gap: 8px;
+}
+.result-head h2 { margin-bottom: 0; }
+.result-head-right { display: flex; align-items: center; gap: 10px; }
+
+/* ── 权重条形图 ── */
+.bar-chart { margin-bottom: 22px; }
+.bar-item {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 8px;
+}
+.bar-label {
+  width: 80px; text-align: right; font-size: 13px; font-weight: 600;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  flex-shrink: 0;
+}
+.bar-track {
+  flex: 1; height: 28px; background: var(--c-bg);
+  border-radius: 6px; overflow: hidden; position: relative;
+}
+.bar-fill {
+  height: 100%; border-radius: 6px;
+  background: linear-gradient(90deg, #e8453c, #f5726b);
+  transition: width .6s cubic-bezier(.22,.61,.36,1);
+  display: flex; align-items: center; padding-left: 10px;
+}
+.bar-fill span {
+  font-size: 12px; font-weight: 700; color: #fff;
+  white-space: nowrap;
+}
+.bar-fill.light { background: linear-gradient(90deg, #bbb, #d0d0d0); }
+
+/* ── 回测权重热力图 ── */
+#btWeightTable td.weight-cell {
+  font-size: 11px; font-weight: 600; text-align: center;
+  padding: 6px 8px; min-width: 60px;
+}
+#btWeightTable th { position: sticky; top: 0; z-index: 1; }
+
+/* ── 响应式 ── */
+@media (max-width: 640px) {
+  .mode-tabs { max-width: 100%; }
+  .view-row { grid-template-columns: 1fr; }
+  .page-header h1 { font-size: 22px; }
+}

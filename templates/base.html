@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}智投 — 智能投资分析平台{% endblock %}</title>
+  <link rel="stylesheet" href="/static/css/base.css">
+  {% block extra_css %}{% endblock %}
+</head>
+<body data-theme="light">
+
+  <!-- 导航栏 -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="/" class="nav-logo">📊 智投</a>
+      <div class="nav-links">
+        <a href="/" class="nav-link">首页</a>
+        <a href="/quant" class="nav-link">量化分析</a>
+        <a href="/portfolio" class="nav-link">投资组合</a>
+      </div>
+      <button class="theme-toggle" id="themeToggle" title="切换暗色模式" aria-label="切换暗色模式">
+        <span class="theme-icon">🌙</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- 主体内容 -->
+  <main class="main">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- 页脚 -->
+  <footer class="footer">
+    <p>⚠️ 本平台仅提供分析参考，不构成任何投资建议。投资有风险，入市需谨慎。</p>
+  </footer>
+
+  <!-- 全局加载蒙层 -->
+  <div class="loading-mask" id="loadingMask">
+    <div class="loading-dot"></div>
+    <span>正在计算…</span>
+  </div>
+
+  <!-- Toast 容器 -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="/static/js/shared.js"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+{% block title %}量化分析 — 智投{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="/static/css/quant.css">{% endblock %}
+
+{% block content %}
+
+<!-- 页面标题 -->
+<section class="page-header">
+  <h1>量化分析工作台</h1>
+  <p class="page-desc">Markov 链 + ARIMA 时间序列 —— 智能识别市场牛熊状态，预测股价走势</p>
+</section>
+
+<!-- 第一步：上传数据 -->
+<section class="card">
+  <div class="step-num">①</div>
+  <h2>上传价格数据</h2>
+  <p class="step-desc">上传单只股票的历史价格 CSV 文件，或使用示例数据快速体验</p>
+
+  <button class="chip" id="btnQuantSample">📊 加载示例数据（Apple 股价）</button>
+
+  <!-- 拖拽上传区 -->
+  <div class="upload-zone" id="uploadZone">
+    <div class="upload-icon">📁</div>
+    <p class="upload-text">点击或拖拽上传 CSV 文件</p>
+    <p class="upload-hint">文件需包含两列：Date（日期）和 Price（价格）</p>
+    <input type="file" id="uploadFile" accept=".csv" style="display:none">
+  </div>
+
+  <!-- 数据预览 -->
+  <div class="data-preview" id="dataPreview" style="display:none">
+    <h4>数据预览（最近 10 行）</h4>
+    <div class="simple-table">
+      <table id="previewTable">
+        <thead><tr><th>日期</th><th>价格</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <p class="fld-tip">共 <span id="previewTotal">0</span> 条数据</p>
+  </div>
+</section>
+
+<!-- 第二步：参数设置 -->
+<section class="card">
+  <div class="step-num">②</div>
+  <h2>参数设置</h2>
+  <p class="step-desc">调整模型参数来匹配你的分析需求。不确定怎么填？直接用默认值就好</p>
+
+  <div class="three-col">
+    <label class="fld">
+      <span class="fld-name">ARIMA p（自回归阶数）</span>
+      <input id="inputP" type="number" value="2" min="0" max="5" step="1">
+      <span class="fld-tip">历史值对未来值的影响程度</span>
+    </label>
+    <label class="fld">
+      <span class="fld-name">ARIMA d（差分阶数）</span>
+      <input id="inputD" type="number" value="1" min="0" max="2" step="1">
+      <span class="fld-tip">使数据平稳化所需的差分次数</span>
+    </label>
+    <label class="fld">
+      <span class="fld-name">ARIMA q（移动平均阶数）</span>
+      <input id="inputQ" type="number" value="2" min="0" max="5" step="1">
+      <span class="fld-tip">预测误差的反馈程度</span>
+    </label>
+  </div>
+
+  <div class="three-col">
+    <label class="fld">
+      <span class="fld-name">Markov 状态数</span>
+      <select id="inputMarkovStates">
+        <option value="2">2 — 牛熊</option>
+        <option value="3" selected>3 — 牛熊+震荡</option>
+        <option value="4">4 — 细分状态</option>
+        <option value="5">5 — 更细分</option>
+      </select>
+    </label>
+    <label class="fld">
+      <span class="fld-name">预测期数</span>
+      <input id="inputForecastSteps" type="number" value="12" min="4" max="52">
+      <span class="fld-tip">向前预测多少期</span>
+    </label>
+  </div>
+</section>
+
+<!-- 计算按钮 -->
+<div class="action-bar">
+  <button id="btnQuantRun" class="btn-go">开始分析</button>
+</div>
+
+<!-- 第三步：结果展示 -->
+<section class="card result-card" id="cardQuantResult" style="display:none">
+  <div class="step-num">③</div>
+  <div class="result-head">
+    <h2>分析结果</h2>
+    <span id="quantStatusBadge" class="tag tag-ok">✓ 分析完成</span>
+  </div>
+
+  <!-- 概览指标 -->
+  <div class="kpis">
+    <div class="kpi">
+      <span class="kpi-label">总收益率</span>
+      <strong class="kpi-val" id="qTotalRet">--</strong>
+    </div>
+    <div class="kpi">
+      <span class="kpi-label">年化收益</span>
+      <strong class="kpi-val" id="qAnnRet">--</strong>
+    </div>
+    <div class="kpi">
+      <span class="kpi-label">年化波动</span>
+      <strong class="kpi-val" id="qAnnVol">--</strong>
+    </div>
+    <div class="kpi">
+      <span class="kpi-label">收益风险比</span>
+      <strong class="kpi-val" id="qSharpe">--</strong>
+    </div>
+  </div>
+
+  <!-- 市场状态图 -->
+  <h3 style="margin-bottom:12px">市场状态识别</h3>
+  <p class="step-desc">背景色块标识不同市场状态：<span style="color:#2ba471">🟢 牛市</span> / <span style="color:#e8453c">🔴 熊市</span> / <span style="color:#e3970e">🟡 震荡</span></p>
+  <div class="chart-container" id="chartRegime" style="height:450px"></div>
+
+  <!-- 状态概率 -->
+  <div class="two-col" style="margin-bottom:16px">
+    <div>
+      <h4 style="margin-bottom:8px">状态转移概率矩阵</h4>
+      <div class="simple-table">
+        <table id="transMatrixTable">
+          <thead></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    <div>
+      <h4 style="margin-bottom:8px">各状态统计</h4>
+      <div class="simple-table">
+        <table id="stateStatsTable">
+          <thead><tr><th>状态</th><th>平均收益率</th><th>长期概率</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 预测图 -->
+  <h3 style="margin-bottom:12px">价格预测</h3>
+  <p class="step-desc">实线为历史价格，虚线为预测值，阴影区域为 95% 置信区间</p>
+  <div class="chart-container" id="chartForecast" style="height:450px"></div>
+
+  <div class="kpis" style="margin-top:16px">
+    <div class="kpi">
+      <span class="kpi-label">AIC</span>
+      <strong class="kpi-val" id="qAic" style="font-size:18px">--</strong>
+    </div>
+    <div class="kpi">
+      <span class="kpi-label">BIC</span>
+      <strong class="kpi-val" id="qBic" style="font-size:18px">--</strong>
+    </div>
+    <div class="kpi">
+      <span class="kpi-label">最终预测价</span>
+      <strong class="kpi-val" id="qFinalPrice" style="font-size:18px">--</strong>
+    </div>
+  </div>
+
+  <p class="disclaimer">⚠️ 以上分析仅基于历史数据的统计规律，不构成投资建议。预测结果存在不确定性，请理性看待。</p>
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<script src="/static/js/quant.js"></script>
+{% endblock %}

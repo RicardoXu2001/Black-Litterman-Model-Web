@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+{% block title %}投资组合 — 智投{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="/static/css/portfolio.css">{% endblock %}
+
+{% block content %}
+
+<!-- 页面标题 -->
+<section class="page-header">
+  <h1>投资组合优化</h1>
+  <p class="page-desc">Black-Litterman 模型 —— 融合市场共识与你的个人判断，计算出最优仓位配置</p>
+</section>
+
+<!-- 模式切换 Tab -->
+<div class="mode-tabs">
+  <button class="mode-tab active" data-mode="optimize">单次优化</button>
+  <button class="mode-tab" data-mode="backtest">滚动回测</button>
+</div>
+
+<!-- ═══════════════════ 单次优化模式 ═══════════════════ -->
+<div class="mode-panel" id="panelOptimize">
+
+  <!-- 第一步：选择资产 -->
+  <section class="card">
+    <div class="step-num">①</div>
+    <h2>你投哪些标的？</h2>
+    <p class="step-desc">输入你想投资的股票或 ETF，也可以直接使用下面的示例</p>
+
+    <button class="chip preset-btn" id="btnPreset">📊 加载示例数据（10只美股龙头 + 真实历史数据）</button>
+
+    <div class="two-col">
+      <label class="fld">
+        <span class="fld-name">标的名称</span>
+        <textarea id="inputAssets" rows="2" placeholder="AAPL, MSFT, AMZN, JPM, V"></textarea>
+        <span class="fld-tip">用逗号或换行分隔，至少输入 2 个</span>
+      </label>
+      <label class="fld">
+        <span class="fld-name">当前仓位比例</span>
+        <textarea id="inputWeights" rows="2" placeholder="每个标的各占 20%"></textarea>
+        <span class="fld-tip">与标的顺序一致，加起来应等于 1（100%）</span>
+      </label>
+    </div>
+
+    <label class="fld">
+      <span class="fld-name">历史涨跌数据</span>
+      <textarea id="inputReturns" rows="5" placeholder="每行是一期，每列是一个标的的涨跌幅&#10;例如：0.001, -0.002, 0.003, 0.001, 0.000"></textarea>
+      <span class="fld-tip">如果你没有数据，点上面的"加载示例"就会自动填入真实数据</span>
+    </label>
+
+    <button class="toggle-link" id="btnToggleSettings">▸ 高级设置</button>
+    <div class="collapse" id="panelSettings">
+      <div class="three-col">
+        <label class="fld"><span class="fld-name">最大仓位</span><input id="inputMaxWeight" type="number" step="0.05" value="0.35"></label>
+        <label class="fld"><span class="fld-name">换手限制</span><input id="inputTurnoverLimit" type="number" step="0.05" value="0.5"></label>
+        <label class="fld"><span class="fld-name">无风险利率</span><input id="inputRf" type="number" step="0.001" value="0.0324"></label>
+      </div>
+      <label class="chk"><input id="inputLongOnly" type="checkbox" checked> 不允许卖空（推荐普通投资者勾选）</label>
+    </div>
+  </section>
+
+  <!-- 第二步：表达看法 -->
+  <section class="card">
+    <div class="step-num">②</div>
+    <h2>你有什么看法？</h2>
+    <p class="step-desc">如果你对某些标的未来走势有判断，可以在这里添加。没有看法也可以直接跳过</p>
+    <div id="viewsContainer" class="views"></div>
+    <button id="btnAddView" class="btn-add-view">＋ 添加一条看法</button>
+    <p class="skip-note">💡 没有看法也没关系——模型会自动参考市场共识给出一个均衡的配置方案</p>
+  </section>
+
+  <!-- 计算按钮 -->
+  <div class="action-bar">
+    <button id="btnCalc" class="btn-go">开始计算最优方案</button>
+  </div>
+
+  <!-- 第三步：查看结果 -->
+  <section class="card result-card" id="cardResult" style="display:none">
+    <div class="step-num">③</div>
+    <div class="result-head">
+      <h2>你的最优配置方案</h2>
+      <div class="result-head-right">
+        <span id="statusBadge" class="tag tag-ok">✓ 计算完成</span>
+        <button id="btnDownload" class="link-btn">下载表格</button>
+      </div>
+    </div>
+
+    <div class="kpis">
+      <div class="kpi">
+        <span class="kpi-label">预期年化收益</span>
+        <strong class="kpi-val" id="mAnnualReturn">--</strong>
+      </div>
+      <div class="kpi">
+        <span class="kpi-label">预期波动</span>
+        <strong class="kpi-val" id="mAnnualVol">--</strong>
+      </div>
+      <div class="kpi">
+        <span class="kpi-label">风险收益比</span>
+        <strong class="kpi-val" id="mSharpe">--</strong>
+      </div>
+      <div class="kpi">
+        <span class="kpi-label">调仓幅度</span>
+        <strong class="kpi-val" id="mTurnover">--</strong>
+      </div>
+    </div>
+
+    <div class="bar-chart" id="barChart"></div>
+
+    <div class="simple-table">
+      <table id="resultTable">
+        <thead>
+          <tr><th>标的</th><th>当前仓位</th><th>建议仓位</th><th>预期涨跌</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <p class="disclaimer">⚠️ 以上结果基于历史数据和你的看法计算得出，仅供参考，不构成投资建议。</p>
+  </section>
+</div>
+
+<!-- ═══════════════════ 滚动回测模式 ═══════════════════ -->
+<div class="mode-panel" id="panelBacktest" style="display:none">
+
+  <section class="card">
+    <div class="step-num">①</div>
+    <h2>回测设置</h2>
+    <p class="step-desc">使用历史数据对整个策略进行滚动回测，验证模型在真实市场中的表现</p>
+
+    <button class="chip" id="btnBtPreset">📊 加载示例数据</button>
+
+    <div class="three-col">
+      <label class="fld">
+        <span class="fld-name">起始日期索引</span>
+        <input id="inputBtStart" type="number" value="273">
+        <span class="fld-tip">对应 2015/1/2</span>
+      </label>
+      <label class="fld">
+        <span class="fld-name">结束日期索引</span>
+        <input id="inputBtEnd" type="number" value="324">
+        <span class="fld-tip">对应 2015/12/25</span>
+      </label>
+      <label class="fld">
+        <span class="fld-name">滚动窗口大小</span>
+        <input id="inputBtWindow" type="number" value="200">
+        <span class="fld-tip">用于估计参数的历史期数</span>
+      </label>
+    </div>
+
+    <div class="three-col">
+      <label class="fld">
+        <span class="fld-name">观点类型</span>
+        <select id="inputBtViewType">
+          <option value="0">市值权重（无观点）</option>
+          <option value="1">任意观点</option>
+          <option value="2" selected>合理观点（AMZN > JPM）</option>
+          <option value="3">近期收益作为观点</option>
+        </select>
+      </label>
+      <label class="fld">
+        <span class="fld-name">最大仓位</span>
+        <input id="inputBtMaxWeight" type="number" step="0.05" value="0.35">
+      </label>
+      <label class="fld">
+        <span class="fld-name">换手限制</span>
+        <input id="inputBtTurnoverLimit" type="number" step="0.05" value="0.5">
+      </label>
+    </div>
+  </section>
+
+  <div class="action-bar">
+    <button id="btnBtRun" class="btn-go">开始回测</button>
+  </div>
+
+  <!-- 回测结果 -->
+  <section class="card result-card" id="cardBtResult" style="display:none">
+    <div class="step-num">②</div>
+    <div class="result-head">
+      <h2>回测结果</h2>
+      <span id="btStatusBadge" class="tag tag-ok">✓ 回测完成</span>
+    </div>
+
+    <div class="kpis">
+      <div class="kpi">
+        <span class="kpi-label">BL 毛收益率</span>
+        <strong class="kpi-val" id="btGrossRet">--</strong>
+      </div>
+      <div class="kpi">
+        <span class="kpi-label">BL 净收益率</span>
+        <strong class="kpi-val" id="btNetRet">--</strong>
+      </div>
+      <div class="kpi">
+        <span class="kpi-label">等权重收益率</span>
+        <strong class="kpi-val" id="btEqRet">--</strong>
+      </div>
+      <div class="kpi">
+        <span class="kpi-label">平均换手率</span>
+        <strong class="kpi-val" id="btAvgTurnover">--</strong>
+      </div>
+    </div>
+
+    <div class="kpis">
+      <div class="kpi">
+        <span class="kpi-label">总交易成本</span>
+        <strong class="kpi-val" id="btTotalCost">--</strong>
+      </div>
+    </div>
+
+    <!-- 累计收益图 -->
+    <div class="chart-container" id="btChartReturn"></div>
+
+    <!-- 权重热力图 -->
+    <h3 style="margin-bottom:12px">权重变化一览</h3>
+    <div class="simple-table" style="max-height:400px; overflow-y:auto">
+      <table id="btWeightTable">
+        <thead></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <p class="disclaimer">⚠️ 以上回测结果基于历史数据，过往表现不代表未来收益。</p>
+  </section>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+<script src="/static/js/portfolio.js"></script>
+{% endblock %}

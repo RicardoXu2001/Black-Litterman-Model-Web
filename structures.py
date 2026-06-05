@@ -1,0 +1,45 @@
+import os
+
+
+# 原始数据
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+## 股票价格数据
+PRICE_FILENAME = os.path.join(BASE_DIR, 'code', 'Data', 'Price_Data.xlsx')
+PRICE_SHEETNAME = 'Weekly'
+
+## 股票市值数据
+MV_FILENAME = os.path.join(BASE_DIR, 'code', 'Data', 'Market_Value.xlsx')
+MV_SHEETNAME = 'Weekly'
+
+# 模型参数
+TAU = 0.3           # 后验期望收益率协方差矩阵的放缩尺度，取值在0~1之间
+PERIODS_PER_YEAR = 52
+RISK_FREE_RATE_ANNUAL = 0.0324
+COV_SHRINKAGE = 0.10       # 协方差收缩比例，降低小样本估计噪音
+COV_RIDGE = 1e-8           # 协方差矩阵岭项，避免矩阵不可逆
+
+# 真实投资流程约束
+REALISTIC_OPTIMIZATION = True
+LONG_ONLY = True           # True 表示不允许做空
+MAX_WEIGHT = 0.35          # 单个资产最大权重
+MIN_WEIGHT = 0.0           # 单个资产最小权重
+TURNOVER_LIMIT = 0.50      # 单期最大换手率；None 表示不限制
+TURNOVER_PENALTY = 0.001   # 优化中对换手率的惩罚
+TRANSACTION_COST_BPS = 10  # 单边交易成本，单位 bps；10 bps = 0.10%
+
+# 模型回测
+BACK_TEST_T = 200          # 回测时间T窗口：200期
+START_INDEX = 273          # 开始日期：2015/1/2
+END_INDEX = 324            # 结束日期：2015/12/25
+INDEX_NUMBER = 0           # 股指数据索引：0.标普500,1.道琼斯，2.纳斯达克
+
+# 观点参数
+VIEW_TYPE = 2              # 对观点列表进行索引
+VIEW_TYPE_NAME = ['Market value as view', "Arbitrary views", "Reasonable views", "Near period return as view"]
+VIEW_T = 10                # 近期参数
+
+# 量化分析参数
+ARIMA_ORDER = (2, 1, 2)    # ARIMA (p, d, q)
+MARKOV_N_STATES = 3        # 市场状态数：3 = 牛市/熊市/震荡
+FORECAST_STEPS = 12        # 默认预测期数
