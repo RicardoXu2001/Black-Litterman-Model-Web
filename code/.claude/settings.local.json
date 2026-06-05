@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pip list *)",
+      "Bash(pip install *)",
+      "Bash(python *)",
+      "Bash(curl -s http://127.0.0.1:8000/)",
+      "Bash(curl -s http://127.0.0.1:8000/api/sample)",
+      "Bash(curl -s -X POST http://127.0.0.1:8000/api/optimize -H 'Content-Type: application/json' -d '{\"assets\":[\"AAPL\",\"MSFT\",\"AMZN\",\"JPM\",\"V\"],\"market_weights\":[0.2,0.2,0.2,0.2,0.2],\"returns\":[[0.001,-0.002,0.003,0.001,0.0],[-0.001,0.004,-0.001,0.002,0.001],[0.002,0.001,0.0,-0.003,0.002],[0.0,0.002,-0.001,0.001,0.003],[-0.002,0.001,0.002,0.0,-0.001],[0.003,-0.001,0.001,-0.002,0.002],[0.001,0.0,0.002,0.001,-0.002],[-0.001,0.002,-0.002,0.003,0.001],[0.002,0.001,-0.001,0.0,0.002],[0.0,-0.002,0.003,0.001,-0.001]],\"views\":[{\"name\":\"test\",\"legs\":[{\"asset\":\"AMZN\",\"weight\":1},{\"asset\":\"JPM\",\"weight\":-1}],\"q\":0.01,\"confidence\":0.7}]}')",
+      "Bash(taskkill //F //IM python.exe)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}, Size: %{size_download} bytes\\\\n\" http://127.0.0.1:8000/)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}, Size: %{size_download} bytes\\\\n\" http://127.0.0.1:8000/style.css)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code}, Size: %{size_download} bytes\\\\n\" http://127.0.0.1:8000/app.js)",
+      "Bash(curl -s http://127.0.0.1:8000/api/nonexistent)",
+      "Bash(curl -s -X POST http://127.0.0.1:8000/api/optimize -H 'Content-Type: application/json' -d '{\"assets\":[\"A\"],\"market_weights\":[1],\"returns\":[[0.01],[0.02]]}')",
+      "Bash(curl -s -X POST http://127.0.0.1:8000/api/optimize -H 'Content-Type: application/json' -d '{\"assets\":[\"A\",\"B\"],\"market_weights\":[0.5],\"returns\":[[0.01,0.02],[0.03,0.04],[0.05,0.06],[0.07,0.08],[0.09,0.10],[0.11,0.12]]}')",
+      "Bash(curl -s -X POST http://127.0.0.1:8000/api/optimize -H 'Content-Type: application/json' -d '{\"assets\":[\"A\",\"B\",\"C\"],\"market_weights\":[0.33,0.33,0.34],\"returns\":[[0.01,-0.02,0.01],[0.03,-0.01,0.02],[-0.02,0.01,0.03],[0.01,0.02,-0.01],[0.02,-0.03,0.01],[0.01,0.01,0.02],[0.0,-0.01,0.03],[-0.02,0.02,0.01]],\"views\":[]}')",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code} Size: %{size_download}\\\\n\" http://127.0.0.1:8000/)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code} Size: %{size_download}\\\\n\" http://127.0.0.1:8000/style.css)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code} Size: %{size_download}\\\\n\" http://127.0.0.1:8000/app.js)",
+      "Bash(curl -s -o /dev/null -w \" HTTP %{http_code}, %{size_download} bytes\\\\n\" http://127.0.0.1:8000/)",
+      "Bash(curl -s -o /dev/null -w \" CSS: HTTP %{http_code}, %{size_download} bytes\\\\n\" http://127.0.0.1:8000/style.css)",
+      "Bash(curl -s -o /dev/null -w \" JS: HTTP %{http_code}, %{size_download} bytes\\\\n\" http://127.0.0.1:8000/app.js)",
+      "Bash(curl -s -X POST http://127.0.0.1:8000/api/optimize -H 'Content-Type: application/json' -d '{\"assets\":[\"A\",\"B\",\"C\"],\"market_weights\":[0.33,0.33,0.34],\"returns\":[[0.01,0.02,0.01]],\"views\":[]}')"
+    ]
+  }
+}
